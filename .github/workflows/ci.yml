@@ -2,9 +2,9 @@ name: Java CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
@@ -36,4 +36,3 @@ jobs:
       with:
         name: tourguide-artifacts
         path: ./TourGuide/target/*.jar
-
