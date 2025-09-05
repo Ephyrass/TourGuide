@@ -69,8 +69,10 @@ public class User {
 		visitedLocations.clear();
 	}
 	
-	public void addUserReward(UserReward userReward) {
-		if(userRewards.stream().filter(r -> !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {
+	public synchronized void addUserReward(UserReward userReward) {
+		 // Créer une copie de la liste pour éviter ConcurrentModificationException
+		List<UserReward> currentRewards = new ArrayList<>(userRewards);
+		if(currentRewards.stream().noneMatch(r -> r.attraction.attractionName.equals(userReward.attraction.attractionName))) {
 			userRewards.add(userReward);
 		}
 	}
