@@ -19,20 +19,23 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Make mvnw executable
-      run: chmod +x ./mvnw
-      working-directory: ./TourGuide
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
 
     - name: Compile
-      run: ./mvnw compile --no-transfer-progress
+      run: mvn compile --no-transfer-progress
       working-directory: ./TourGuide
 
     - name: Run tests
-      run: ./mvnw test --no-transfer-progress
+      run: mvn test --no-transfer-progress
       working-directory: ./TourGuide
 
     - name: Build artifacts
-      run: ./mvnw package --no-transfer-progress
+      run: mvn package --no-transfer-progress
       working-directory: ./TourGuide
 
     - name: Upload artifact
