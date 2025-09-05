@@ -1,0 +1,39 @@
+name: Java CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Compile
+      run: ./mvnw compile --no-transfer-progress
+      working-directory: ./TourGuide
+
+    - name: Run tests
+      run: ./mvnw test --no-transfer-progress
+      working-directory: ./TourGuide
+
+    - name: Build artifacts
+      run: ./mvnw package --no-transfer-progress
+      working-directory: ./TourGuide
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: tourguide-artifacts
+        path: ./TourGuide/target/*.jar
+

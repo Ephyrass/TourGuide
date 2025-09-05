@@ -3,6 +3,10 @@ package com.openclassrooms.tourguide.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -79,6 +83,21 @@ public class RewardsService {
     public int getAttractionRewardPoints(Attraction attraction, User user) {
         return getRewardPoints(attraction, user);
     }
+
+	/**
+	 * Calcule les récompenses pour tous les utilisateurs en parallèle.
+	 */
+	public void calculateAllRewardsParallel(List<User> users) throws InterruptedException, ExecutionException {
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		List<Future<?>> futures = new ArrayList<>();
+		for (User user : users) {
+			futures.add(executor.submit(() -> calculateRewards(user)));
+		}
+		for (Future<?> future : futures) {
+			future.get();
+		}
+		executor.shutdown();
+	}
 
 	public double getDistance(Location loc1, Location loc2) {
         double lat1 = Math.toRadians(loc1.latitude);

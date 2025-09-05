@@ -15,6 +15,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -111,6 +115,21 @@ public class TourGuideService {
 	// Méthode utilitaire exposée pour obtenir les points de récompense pour une attraction et un utilisateur
 	public int getAttractionRewardPoints(Attraction attraction, User user) {
 		return rewardsService.getAttractionRewardPoints(attraction, user);
+	}
+
+	/**
+	 * Traite le tracking de localisation de tous les utilisateurs en parallèle.
+	 */
+	public void trackAllUsersLocationsParallel(List<User> users) throws InterruptedException, ExecutionException {
+		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		List<Future<?>> futures = new java.util.ArrayList<>();
+		for (User user : users) {
+			futures.add(executor.submit(() -> trackUserLocation(user)));
+		}
+		for (Future<?> future : futures) {
+			future.get();
+		}
+		executor.shutdown();
 	}
 
 	private void addShutDownHook() {

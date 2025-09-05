@@ -16,9 +16,13 @@ import com.openclassrooms.tourguide.user.User;
 import com.openclassrooms.tourguide.user.UserReward;
 
 import tripPricer.Provider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 public class TourGuideController {
+
+    private static final Logger logger = LoggerFactory.getLogger(TourGuideController.class);
 
 	@Autowired
 	TourGuideService tourGuideService;
@@ -44,16 +48,20 @@ public class TourGuideController {
         //    Note: Attraction reward points can be gathered from RewardsCentral
     @RequestMapping("/getNearbyAttractions") 
     public List<NearbyAttraction> getNearbyAttractions(@RequestParam String userName) {
-    	VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
-    	List<Attraction> attractions = tourGuideService.getNearByAttractions(visitedLocation);
-
-		return attractions.stream().map(a -> {
-			double distance = tourGuideService.getDistance(a, visitedLocation.location);
-			int reward = tourGuideService.getAttractionRewardPoints(a, getUser(userName));
-			return new NearbyAttraction(a.attractionName, a.latitude, a.longitude,
-					visitedLocation.location.latitude, visitedLocation.location.longitude,
-					distance, reward);
-		}).collect(Collectors.toList());
+        VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
+        List<Attraction> attractions = tourGuideService.getNearByAttractions(visitedLocation);
+        List<NearbyAttraction> result = attractions.stream().map(a -> {
+            double distance = tourGuideService.getDistance(a, visitedLocation.location);
+            int reward = tourGuideService.getAttractionRewardPoints(a, getUser(userName));
+            return new NearbyAttraction(a.attractionName, a.latitude, a.longitude,
+                    visitedLocation.location.latitude, visitedLocation.location.longitude,
+                    distance, reward);
+        }).collect(Collectors.toList());
+        logger.info("Attractions trouvées: {}", result.size());
+        if (!result.isEmpty()) {
+            logger.info("Premier élément: {}", result.get(0));
+        }
+        return result;
     }
     
     @RequestMapping("/getRewards") 
