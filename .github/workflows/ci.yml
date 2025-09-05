@@ -19,6 +19,10 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Make mvnw executable
+      run: chmod +x ./mvnw
+      working-directory: ./TourGuide
+
     - name: Compile
       run: ./mvnw compile --no-transfer-progress
       working-directory: ./TourGuide
