@@ -108,6 +108,7 @@ public class TestTourGuideService {
 		assertEquals(5, attractions.size());
 	}
 
+
     @Test
 	public void getTripDeals() {
 		GpsUtil gpsUtil = new GpsUtil();
@@ -116,6 +117,7 @@ public class TestTourGuideService {
 		TourGuideService tourGuideService = new TourGuideService(gpsUtil, rewardsService);
 
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
+		user.getUserPreferences().setTicketQuantity(10);
 
 		List<Provider> providers = tourGuideService.getTripDeals(user);
 
