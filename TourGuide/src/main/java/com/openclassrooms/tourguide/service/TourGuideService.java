@@ -7,18 +7,7 @@ import com.openclassrooms.tourguide.user.UserReward;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ExecutionException;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -64,7 +53,7 @@ public class TourGuideService {
 	}
 
 	public VisitedLocation getUserLocation(User user) {
-		VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation()
+		VisitedLocation visitedLocation = (!user.getVisitedLocations().isEmpty()) ? user.getLastVisitedLocation()
 				: trackUserLocation(user);
 		return visitedLocation;
 	}
@@ -74,7 +63,7 @@ public class TourGuideService {
 	}
 
 	public List<User> getAllUsers() {
-		return internalUserMap.values().stream().collect(Collectors.toList());
+		return new ArrayList<>(internalUserMap.values());
 	}
 
 	public void addUser(User user) {
@@ -130,18 +119,13 @@ public class TourGuideService {
 	}
 
 	/**
-	 * Traite le tracking de localisation de tous les utilisateurs en parallèle.
+	 * Traite le tracking de localisation de tous les utilisateurs en parallèle avec CompletableFuture.
 	 */
-	public void trackAllUsersLocationsParallel(List<User> users) throws InterruptedException, ExecutionException {
-		ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-		List<Future<?>> futures = new java.util.ArrayList<>();
-		for (User user : users) {
-			futures.add(executor.submit(() -> trackUserLocation(user)));
-		}
-		for (Future<?> future : futures) {
-			future.get();
-		}
-		executor.shutdown();
+	public void trackAllUsersLocationsParallel(List<User> users) {
+		List<java.util.concurrent.CompletableFuture<Void>> futures = users.stream()
+			.map(user -> java.util.concurrent.CompletableFuture.runAsync(() -> trackUserLocation(user)))
+			.toList();
+		java.util.concurrent.CompletableFuture.allOf(futures.toArray(new java.util.concurrent.CompletableFuture[0])).join();
 	}
 
 	private void addShutDownHook() {
@@ -172,7 +156,7 @@ public class TourGuideService {
 
 			internalUserMap.put(userName, user);
 		});
-		logger.debug("Created " + InternalTestHelper.getInternalUserNumber() + " internal test users.");
+        logger.debug("Created {} internal test users.", InternalTestHelper.getInternalUserNumber());
 	}
 
 	private void generateUserLocationHistory(User user) {
