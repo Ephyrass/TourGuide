@@ -84,8 +84,9 @@ public class RewardsService {
             return;
         }
 
-        // For multiple users, use parallel processing
-        int poolSize = Math.max(Runtime.getRuntime().availableProcessors() * 4, 16);
+        // For multiple users, use parallel processing with optimized pool size
+        // Use a larger pool for high-volume operations (100K+ users)
+        int poolSize = Math.max(Runtime.getRuntime().availableProcessors() * 8, 100);
         ExecutorService executor = Executors.newFixedThreadPool(poolSize);
 
         try {

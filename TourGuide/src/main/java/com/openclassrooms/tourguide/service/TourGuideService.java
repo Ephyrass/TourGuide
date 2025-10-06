@@ -169,14 +169,21 @@ public class TourGuideService {
 			return List.of(trackSingleUserLocation(users.get(0)));
 		}
 
-		// For multiple users, use parallel processing
-		List<java.util.concurrent.CompletableFuture<VisitedLocation>> futures = users.stream()
-			.map(user -> java.util.concurrent.CompletableFuture.supplyAsync(() -> trackSingleUserLocation(user)))
-			.toList();
+		// For multiple users, use parallel processing with optimized thread pool
+		int poolSize = Math.max(Runtime.getRuntime().availableProcessors() * 8, 100);
+		java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(poolSize);
 
-		return futures.stream()
-			.map(java.util.concurrent.CompletableFuture::join)
-			.collect(Collectors.toList());
+		try {
+			List<java.util.concurrent.CompletableFuture<VisitedLocation>> futures = users.stream()
+				.map(user -> java.util.concurrent.CompletableFuture.supplyAsync(() -> trackSingleUserLocation(user), executor))
+				.toList();
+
+			return futures.stream()
+				.map(java.util.concurrent.CompletableFuture::join)
+				.collect(Collectors.toList());
+		} finally {
+			executor.shutdown();
+		}
 	}
 
 	/**

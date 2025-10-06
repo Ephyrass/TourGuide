@@ -70,7 +70,7 @@ public class User {
 	}
 	
 	public synchronized void addUserReward(UserReward userReward) {
-		 // Créer une copie de la liste pour éviter ConcurrentModificationException
+		 // create a copy of the list to avoid concurrent modification
 		List<UserReward> currentRewards = new ArrayList<>(userRewards);
 		if(currentRewards.stream().noneMatch(r -> r.attraction.attractionName.equals(userReward.attraction.attractionName))) {
 			userRewards.add(userReward);
